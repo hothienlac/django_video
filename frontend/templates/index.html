@@ -1,0 +1,71 @@
+{% load static %}
+
+<!DOCTYPE html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Home</title>
+        <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet" />
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                fetchVideos();
+                document.getElementById('upload-form').addEventListener('submit', uploadVideo);
+            });
+
+            function fetchVideos() {
+                fetch('/api/video/')
+                    .then(response => response.json())
+                    .then(videos => {
+                        console.log('Videos fetched');
+                        const list = document.getElementById('video-list');
+                        list.innerHTML = ''; // Clear existing entries
+                        videos.forEach(video => {
+                            const item = document.createElement('li');
+                            item.textContent = video.name; // Assume the video object has a 'name' attribute
+                            item.onclick = () => playVideo(video.name);
+                            list.appendChild(item);
+                        });
+                    })
+                    .catch(error => console.error('Error:', error));
+            }   
+
+            function uploadVideo(event) {
+                event.preventDefault();
+                const formData = new FormData(event.target);
+                fetch('/api/video/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Success:', data);
+                    fetchVideos(); // Refresh the list after uploading
+                })
+                .catch(error => console.error('Error:', error));
+            }
+
+            function playVideo(videoName) {
+                const videoPlayer = document.getElementById('video-player');
+                videoPlayer.src = `/api/video/${videoName}`;
+                videoPlayer.load();
+                videoPlayer.play();
+            }
+        </script>
+    </head>
+    <body>
+        <form id="upload-form" enctype="multipart/form-data">
+            <input type="file" name="file" required />
+            <button type="submit">Upload Video</button>
+        </form>
+        <ul id="video-list"></ul>
+        <video id="video-player" controls width="640">
+            Your browser does not support the video tag.
+        </video>
+    </body>
+</html>
