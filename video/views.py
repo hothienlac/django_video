@@ -9,6 +9,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 videos_path = os.path.join(settings.MEDIA_ROOT, "videos")
+if not os.path.exists(videos_path):
+    os.makedirs(videos_path)
 
 
 class VideoView(APIView):
@@ -32,9 +34,6 @@ class VideoView(APIView):
                 {"message": "No file provided in the request"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-        if not os.path.exists(videos_path):
-            os.makedirs(videos_path)
 
         save_path = os.path.join(videos_path, video_file.name)
         with open(save_path, "wb+") as destination:
